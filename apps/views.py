@@ -12,3 +12,6 @@ def delete_contact(request, contact_id):
     contact = Contact.objects.get(id=contact_id)
     contact.delete()
     return redirect('contact_list')
+
+
+
