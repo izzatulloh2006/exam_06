@@ -1,0 +1,112 @@
+https://bootdey.com/snippets/view/light-contact-list
+list page ni qilish (template) da , delete button ham qoshilsin
+dajango adminkadan malumotlarni csv faylga yuklanadigan qilish
+malumaotlarni update qiladigan page qilinsin
+login va register page qilinsin (django user orqali)
+
+
+
+mkdir contact_list_project
+cd contact_list_project
+
+python -m venv venv
+source venv/bin/activate  # Windows-da: venv\Scripts\activate
+pip install django
+
+
+django-admin startproject contact_list
+cd contact_list
+
+
+# contact_list/models.py
+
+from django.db import models
+
+class Contact(models.Model):
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+
+    def __str__(self):
+        return self.name
+
+
+python manage.py makemigrations
+python manage.py migrate
+
+
+# contact_list/admin.py
+
+from django.contrib import admin
+from .models import Contact
+
+admin.site.register(Contact)
+
+
+touch contact_list/views.py
+touch contact_list/urls.py
+mkdir contact_list/templates
+
+# contact_list/views.py
+
+
+from django.shortcuts import render
+from .models import Contact
+
+def contact_list(request):
+    contacts = Contact.objects.all()
+    return render(request, 'contact_list.html', {'contacts': contacts})
+
+
+# contact_list/urls.py
+
+from django.urls import path
+from .views import contact_list
+
+urlpatterns = [
+    path('', contact_list, name='contact_list'),
+]
+
+<!-- contact_list/templates/contact_list.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contact List</title>
+</head>
+<body>
+    <h1>Contact List</h1>
+    <ul>
+        {% for contact in contacts %}
+            <li>{{ contact.name }} - {{ contact.email }} - {{ contact.phone }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+
+
+# contact_list/views.py
+
+from django.shortcuts import render, redirect
+from .models import Contact
+
+def contact_list(request):
+    contacts = Contact.objects.all()
+    return render(request, 'contact_list.html', {'contacts': contacts})
+
+def delete_contact(request, contact_id):
+    contact = Contact.objects.get(id=contact_id)
+    contact.delete()
+    return redirect('contact_list')
+
+
+# contact_list/urls.py
+
+from django.urls import path
+from .views import contact_list, delete_contact
+
+urlpatterns = [
+    path('', contact_list, name='contact_list'),
+    path('delete/<int:contact_id>/', delete_contact, name='delete_contact'),
+]
+
